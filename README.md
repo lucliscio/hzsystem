@@ -11,10 +11,10 @@ eXperience CORE
 
 Licences
 -------------------------
-- **eXperience CORE code** ©2023 by HZKnight is licensed under [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0.html)
-- **eXperience CORE User Guide and all related documentation** ©2023 by HZKnight is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1) 
+- **eXperience CORE code** ©2024 by HZKnight is licensed under [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0.html)
+- **eXperience CORE User Guide and all related documentation** ©2024 by HZKnight is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1)
 
 
 Descriprion
 -------------------------
-This is a simple PHP framework that I have developed to help me to develop my PHP applications. 
+This is a simple PHP framework that I have developed to help me to develop my PHP applications.
