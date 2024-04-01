@@ -51,8 +51,9 @@
      * @filesource
      */
 
-    class Fs implements StorageDriveInterface{    
-        private $WEB_ROOT;
+    class Fs implements StorageDriveInterface{
+        
+        private string $WEB_ROOT;
 
         public function __construct($path="/"){
             $this->WEB_ROOT = getcwd().$path;
@@ -69,19 +70,17 @@
         public function mkdir($name, $mode=0777){
             settype($name,"string");
 
+            $source = $this->WEB_ROOT.$name;
+
             clearstatcache();
 
-            if(is_dir($name)){
-               return; 
-            } elseif(mkdir($name,$mode)){
-                clearstatcache();
-
-                if(is_dir($name)){
-                    return; 
-                }
+            if(!file_exists($source)){
+                if (!mkdir($source,$mode)){
+                    throw new StorageException("System Error: mkdir(".$source.",".$mode.")", "S01");
+                }                
+            } else {
+                throw new StorageException("System Error: mkdir(".$source.",".$mode.") - Already exist", "S01");
             }
-
-            throw new StorageException("System Error: mkdir(".$name.",".$mode.")", "S01");
         }
 
 
@@ -144,7 +143,7 @@
                 clearstatcache();
           
                 if(file_exists($this->WEB_ROOT.$target)){
-                    if(file_get_contents($this->WEB_ROOT.$__target) === file_get_contents($this->WEB_ROOT.$__source)){
+                    if(file_get_contents($this->WEB_ROOT.$target) === file_get_contents($this->WEB_ROOT.$source)){
                         return;
                     }
                 }

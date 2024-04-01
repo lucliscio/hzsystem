@@ -91,10 +91,17 @@
          */
         public function __construct($message = null, $code = 0)
 	    {
+            // if message in null use message
             if (!$message) {
                 $this->message = dgettext("ELang",'Unknown exception');
                 throw new $this($this->message. get_class($this));
             }
+
+            // if $code == 0 use exception default code
+            if($code == 0){
+                $code = $this->code;
+            }
+
             parent::__construct($message, $code);
 	    }
 	
