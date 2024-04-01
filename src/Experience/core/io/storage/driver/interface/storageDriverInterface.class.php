@@ -51,5 +51,5 @@
         public function mkdir($name, $mode=0777);
         public function rm($name);
         public function fcopy($source,$target);
-        public function ls($dir="./",$pattern="*.*");
+        public function ls($dir="./",$pattern="*.*"):array;
     }

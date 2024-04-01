@@ -86,7 +86,7 @@
 
 
         /**
-         * Delete file
+         * Delete file and directory
          *
          * @param string $name
          * @return void
@@ -96,21 +96,32 @@
 
             clearstatcache();
 
-            if(!file_exists($this->WEB_ROOT.$name)){
-                return;
-            } elseif(unlink($this->WEB_ROOT.$name)){
-                clearstatcache();
+            $source = $this->WEB_ROOT.$name;
 
-                if(!file_exists($this->WEB_ROOT.$name)){
+            if(!file_exists($source)){
+                return;
+            } else if(!is_writable($source)){
+                throw new StorageException("System Error: rm(".$source.") - File not writable", "S01");
+            } else {
+                if(is_dir($source)){
+                    $it = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
+                    $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+                    foreach($files as $file) {
+                        $this->rm($file->getPathname());
+                    }
+                    rmdir($source);
+                } else {
+                    unlink($source);
+                }
+
+                clearstatcache();
+    
+                if(!file_exists($source)){
                     return;
                 }
-            }
-
-            if(!is_writable($this->WEB_ROOT.$name)){
-                throw new StorageException("System Error: rm(".$this->WEB_ROOT.$name.") - File not writable", "S01");
-            }
-
-            throw new StorageException("System Error: rm(".$this->WEB_ROOT.$name.")", "S01");
+                
+                throw new StorageException("System Error: rm(".$source.")", "S01");
+            }            
         }
 
 
@@ -151,29 +162,31 @@
          * @param string $pattern
          * @return array $ls
          */
-        public function ls($dir="./",$pattern="*.*"){
+        public function ls($dir="./",$pattern="*.*"): array{
             settype($dir,"string");
             settype($pattern,"string");
+
+            $source = $this->WEB_ROOT.$dir;
 
             clearstatcache();
 
             $ls=array();
             $regexp=preg_replace("/\\x5C\\x3F/",".",preg_replace("/\\x5C\\x2A/",".*",preg_quote($pattern,"/")));
 
-            if(!is_dir(WEB_ROOT.$dir)){
-                return $ls;
-            } elseif(($dir_id=opendir($this->WEB_ROOT.$dir))!==FALSE){
-                while(($file=readdir($dir_id))!==FALSE){
-                    if(preg_match("/^".$regexp."$/",$file)){
-                        array_push($ls,$file);
+            if(is_dir($source)){
+                $it = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
+                $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+                foreach($files as $file) {
+                    $fileName = $file->getFilename();
+                    if(preg_match("/^".$regexp."$/", $fileName)){
+                        array_push($ls, $fileName);
                     }
                 }
 
-                closedir($dir_id);
                 sort($ls,SORT_STRING);
                 return $ls;
             }
-
-            throw new StorageException("System Error: ls(".$this->WEB_ROOT.$dir.",".$pattern.")", "S01");
+           
+            throw new StorageException("System Error: ls(".$source.",".$pattern.")", "S01");
         }
     }
