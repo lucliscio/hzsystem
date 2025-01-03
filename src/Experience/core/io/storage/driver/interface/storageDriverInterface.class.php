@@ -36,7 +36,7 @@
     namespace Experience\Core\Io\Storage\Driver\Interface;
 
     /**
-     * Definizione delle api dei dirver per lo storage
+     * Definizione delle api dei driver per lo storage
      *
      * @author  lucliscio <lucliscio@h0model.org>
      * @version v 1.0.0
@@ -52,4 +52,6 @@
         public function rm($name);
         public function fcopy($source,$target);
         public function ls($dir="./",$pattern="*.*"):array;
+        public function fileCompare($src, $dest):bool;
+        public function fileExists($src):bool;
     }

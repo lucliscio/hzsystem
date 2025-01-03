@@ -53,10 +53,10 @@
 
     class Fs implements StorageDriveInterface{
         
-        private string $WEB_ROOT;
+        private string $webRoot;
 
         public function __construct($path="/"){
-            $this->WEB_ROOT = getcwd().$path;
+            $this->webRoot = getcwd().$path;
         }
 
 
@@ -64,22 +64,22 @@
          * Make a directory
          *
          * @param string $name
-         * @param string $mode
+         * @param string $mode default 0777
          * @return void
          */
         public function mkdir($name, $mode=0777){
             settype($name,"string");
 
-            $source = $this->WEB_ROOT.$name;
+            $source = $this->webRoot.$name;
 
             clearstatcache();
 
             if(!file_exists($source)){
                 if (!mkdir($source,$mode)){
-                    throw new StorageException("System Error: mkdir(".$source.",".$mode.")", "S01");
-                }                
+                    throw new StorageException("System Error: mkdir(".$source.",".$mode.")");
+                }
             } else {
-                throw new StorageException("System Error: mkdir(".$source.",".$mode.") - Already exist", "S01");
+                throw new StorageException("System Error: mkdir(".$source.",".$mode.") - Already exist");
             }
         }
 
@@ -95,12 +95,12 @@
 
             clearstatcache();
 
-            $source = $this->WEB_ROOT.$name;
+            $source = $this->webRoot.$name;
 
             if(!file_exists($source)){
-                return;
-            } else if(!is_writable($source)){
-                throw new StorageException("System Error: rm(".$source.") - File not writable", "S01");
+                throw new StorageException("System Error: rm({$source}) - File not found");
+            } elseif(!is_writable($source)){
+                throw new StorageException("System Error: rm({$source}) - File not writable");
             } else {
                 if(is_dir($source)){
                     $it = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
@@ -119,8 +119,8 @@
                     return;
                 }
                 
-                throw new StorageException("System Error: rm(".$source.")", "S01");
-            }            
+                throw new StorageException("System Error: rm(".$source.")");
+            }
         }
 
 
@@ -136,29 +136,31 @@
             settype($target,"string");
           
             clearstatcache();
+
+            $src = $this->WEB_ROOT.$source;
+            $dest = $this->WEB_ROOT.$target;
           
-            if(!file_exists($this->WEB_ROOT.$source)){
+            if(!$this->fileExists($src)){
                 return;
-            } elseif(copy($this->WEB_ROOT.$source, $this->WEB_ROOT.$target)){
+            }elseif(copy($src, $dest)){
                 clearstatcache();
           
-                if(file_exists($this->WEB_ROOT.$target)){
-                    if(file_get_contents($this->WEB_ROOT.$target) === file_get_contents($this->WEB_ROOT.$source)){
-                        return;
-                    }
+                if($this->fileExists($dest) && fileCompare($src, $dest)){
+                    return;
                 }
+
             }
           
-            $this->rm($target);
-            throw new StorageException("System Error: fcopy(".$this->WEB_ROOT.$source.",".$this->WEB_ROOT.$target.")", "S01");
+            $this->rm($dest);
+            throw new StorageException("System Error: fcopy(".$this->WEB_ROOT.$source.",".$this->WEB_ROOT.$target.")");
         }
 
 
         /**
          * Directory listing
          *
-         * @param string $dir
-         * @param string $pattern
+         * @param string $dir default ./
+         * @param string $pattern default *.*
          * @return array $ls
          */
         public function ls($dir="./",$pattern="*.*"): array{
@@ -170,7 +172,7 @@
             clearstatcache();
 
             $ls=array();
-            $regexp=preg_replace("/\\x5C\\x3F/",".",preg_replace("/\\x5C\\x2A/",".*",preg_quote($pattern,"/")));
+            $regexp=str_replace("/\\x5C\\x3F/",".",str_replace("/\\x5C\\x2A/",".*",preg_quote($pattern,"/")));
 
             if(is_dir($source)){
                 $it = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
@@ -186,6 +188,36 @@
                 return $ls;
             }
            
-            throw new StorageException("System Error: ls(".$source.",".$pattern.")", "S01");
+            throw new StorageException("System Error: ls(".$source.",".$pattern.")");
+        }
+
+
+        /**
+         * Compare 2 files return true if are equals
+         *
+         * @param string $src
+         * @param string $dest
+         * @return boolean
+         */
+        public function fileCompare($src, $dest): bool{
+            settype($src,"string");
+            settype($dest,"string");
+
+            if($this->fileExists($src) && $this->fileExists($dest)) {
+                return md5_file($src) == md5_file($dest) ? true : false;
+            } else {
+                return false;
+            }
+        }
+
+
+        /**
+         * Return true if file exist
+         *
+         * @param string $src
+         * @return boolean
+         */
+        public function fileExists($src): bool{
+            return file_exists($src);
         }
     }
