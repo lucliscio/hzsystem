@@ -16,7 +16,7 @@
      * -------------------------------------------------------------------------------------------
      * License
      * -------------------------------------------------------------------------------------------
-     * Copyright (C)2023 HZKnight
+     * Copyright (C)2025 HZKnight
      *
      * This program is free software: you can redistribute it and/or modify
      * it under the terms of the GNU Affero General Public License as published by
@@ -39,8 +39,8 @@
      * Definizione delle api dei driver per lo storage
      *
      * @author  lucliscio <lucliscio@h0model.org>
-     * @version v 1.0.0
-     * @copyright Copyright 2024 HZKnight
+     * @version v 1.3.0
+     * @copyright Copyright &copy;2025 HZKnight
      * @license http://www.gnu.org/licenses/agpl-3.0.html GNU/AGPL3
      *
      * @package eXperience
@@ -49,9 +49,12 @@
 
     interface StorageDriveInterface {
         public function mkdir($name, $mode=0777);
-        public function rm($name);
+        public function rm($name):bool;
         public function fcopy($source,$target);
         public function ls($dir="./",$pattern="*.*"):array;
         public function fileCompare($src, $dest):bool;
         public function fileExists($src):bool;
+        public function fileCreate($name,$content):bool;
+        public function fileWrite($name,$content,$mode="a"):bool;
+        public function fileRead($name):mixed;
     }

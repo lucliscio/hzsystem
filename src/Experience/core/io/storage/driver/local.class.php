@@ -1,7 +1,7 @@
 <?php
 
     /*
-     * fs.class.php
+     * local.class.php
      *
      *                                         __  __                _
      *                                      ___\ \/ /_ __   ___ _ __(_) ___ _ __   ___ ___
@@ -17,7 +17,7 @@
      * -------------------------------------------------------------------------------------------
      * License
      * -------------------------------------------------------------------------------------------
-     * Copyright (C)2023 HZKnight
+     * Copyright (C)2025 HZKnight
      *
      * This program is free software: you can redistribute it and/or modify
      * it under the terms of the GNU Affero General Public License as published by
@@ -40,18 +40,18 @@
     use Experience\Core\Io\Storage\Exceptions\StorageException;
 
     /**
-     * Driver per lo standard stage (file system)
+     * Driver for local storage (file system)
      *
      * @author  lucliscio <lucliscio@h0model.org>
      * @version v 1.0.0
-     * @copyright Copyright 2024 HZKnight
+     * @copyright &copy;2025 HZKnight
      * @license http://www.gnu.org/licenses/agpl-3.0.html GNU/AGPL3
      *
      * @package eXperience
      * @filesource
      */
 
-    class Fs implements StorageDriveInterface{
+    class Local implements StorageDriveInterface{
         
         private string $webRoot;
 
@@ -74,7 +74,7 @@
 
             clearstatcache();
 
-            if(!file_exists($source)){
+            if(!$this->fileExists($source)){
                 if (!mkdir($source,$mode)){
                     throw new StorageException("System Error: mkdir(".$source.",".$mode.")");
                 }
@@ -97,7 +97,7 @@
 
             $source = $this->webRoot.$name;
 
-            if(!file_exists($source)){
+            if(!$this->fileExists($source)){
                 throw new StorageException("System Error: rm({$source}) - File not found");
             } elseif(!is_writable($source)){
                 throw new StorageException("System Error: rm({$source}) - File not writable");
@@ -115,7 +115,7 @@
 
                 clearstatcache();
     
-                if(!file_exists($source)){
+                if(!$this->fileExists($source)){
                     return;
                 }
                 
@@ -219,5 +219,81 @@
          */
         public function fileExists($src): bool{
             return file_exists($src);
+        }
+
+
+        /**
+         * Create new file in storage
+         *
+         * @param string $name
+         * @param mixed $content
+         * @return boolean
+         */
+        public function fileCreate($name,$content): bool{
+            settype($name,"string");
+            
+            $source = $this->WEB_ROOT.$name;
+
+            if($this->fileExists($source)){
+                throw new StorageException("System Error: fileCreate(".$source.",...). File already exist");
+            } else {
+
+                if($this->fileWrite($name,$content,"wb") && $this->fileExists($source)){
+                    return true;
+                }
+
+                throw new StorageException("System Error: fileCreate(".$source.",...).");
+            }
+
+        }
+
+        
+        /**
+         * Write file
+         *
+         * @param string $name
+         * @param mixed $content
+         * @param string $mode default a
+         * @return boolean
+         */
+        public function fileWrite($name,$content,$mode="a"): bool{
+            settype($name,"string");
+
+            $source = $this->WEB_ROOT.$name;
+
+            if($mode == "a" && !$this->fileExists($source)){
+                throw new StorageException("System Error: fileWrite(".$source.",".$content.",".$mode.") File not exist");
+            } else {
+                if(($fid=fopen($source,$mode))!==false){
+                    if(fwrite($fid,$content)===strlen($content)){
+                        fflush($fid);
+                        fclose($fid);
+                        clearstatcache();
+                        return true;
+                    }
+                    @fclose($fid);
+                    return false;
+                }
+            }
+
+        }
+
+
+        /**
+         * Read file
+         *
+         * @param string $name
+         * @return mixed
+         */
+        public function fileRead($name): mixed{
+            settype($name,"string");
+
+            $source = $this->WEB_ROOT.$name;
+
+            if($this->fileExists($source)){
+                return file_get_contents($source);
+            }
+
+            throw new StorageException("System Error: fileRead(".$source."). File not exist");
         }
     }

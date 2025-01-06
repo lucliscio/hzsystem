@@ -42,7 +42,7 @@
      *  questa eccezione si verifica quando ci sono problemi con i file e le cartelle
      *
      *  @author lucliscio <lucliscio@h0model.org>
-     *  @version 0.0..1 2024/04/01 08:29:20
+     *  @version 0.0.1 2024/04/01 08:29:20
      *  @copyright &copy;2024 HZKnight
      *  @license http://www.gnu.org/licenses/agpl-3.0.html GNU/AGPL3
      *
@@ -52,5 +52,5 @@
      */
     
     class StorageException extends EException {
-        protected $code = "S01"; 
+        protected $code = "S01";
     }
